@@ -1,16 +1,34 @@
 import json
 import requests
+import time
 from bs4 import BeautifulSoup
+
+def requests_get_with_retries(url):
+	timeout = 2
+	error_msg = "Couldn't connect to gov.uk, waiting {}s and trying again..."
+	while True:
+		try:
+			r =  requests.get(url)
+			return r
+		except:
+			print(error_msg.format(timeout))
+			time.sleep(timeout)
+			timeout *= 2
 
 # Open the decisions data
 with open("decisions-data.json") as infile:
 	decisions_data = json.load(infile)
+# Decisions count
+decisions_total = len(decisions_data)
 
+# Empty list to collect document data
+all_documents = list()
+# Loop through decisions, collecting the relevant data and docs for each
+print("[*] Collecting data and docs on {} decisions".format(decisions_total))
 for i, decision in enumerate(decisions_data):
-	# Go to the decision page
+	decision_id = decision["Decision id"]
 	decision_url = decision["Link"]
-	# print(decision_url)
-	r = requests.get(decision_url)
+	r = requests_get_with_retries(decision_url)
 	if r.status_code == 200:
 		html = r.text
 		soup = BeautifulSoup(html, "lxml")
@@ -34,25 +52,47 @@ for i, decision in enumerate(decisions_data):
 			doc_name = doc.text
 			doc_type = doc_name.split("-")[-1].strip()
 			doc_link = doc.find("a")["href"]
+			filetype = doc_link.split(".")[-1]	
 			# Get the first doc id
 			doc_id_one = doc["id"]
 			# Get the second doc id
 			doc_id_two = doc_link.split("/")[4]
-			# Get the filetype
-			filetype = doc_link.split(".")[-1]
+			# Structuring the document data in a dict
+			document_data = {
+				"Document id (1)": doc_id_one,
+				"Document id (2)": doc_id_two,
+				"Document name": doc_name,
+				"Link": doc_link,
+				"filetype": filetype,
+				"Decision page": decision_url,
+				"Decision id": decision_id
+			}
+			all_documents.append(document_data)
 			
 			# Download the doc
 			outfile_name = doc_link.split("/")[-1]
-			outfile_path = "pdf/" + outfile_name
-			doc_content = requests.get(doc_link).content
-			with open(outfile_path, "wb") as outfile:
-			    outfile.write(doc_content)
-
-	# Test with only the first two cases
-	# if i > 0:
+			doc_content = requests_get_with_retries(doc_link).content
+			with open("pdf/" + outfile_name, "wb") as outfile:
+				outfile.write(doc_content)
+	
+	# Print a process update in the terminal
+	if (i+1) % 20 == 0:
+		update_msg = "[*] Collected documents for {}/{} decisions"
+		print(update_msg.format(i+1, decisions_total))
+	# Sleep for a second between each call
+	time.sleep(1)
+	# Test with only the first ten decisions
+	# if i > 9:
 		# break
 
-# Write the data to the output file:
-# print("[*] Writing the data to the outputfile")
-# with open("detailed-decisions-data.json", "w") as outfile:
-   # json.dump(all_decisions, outfile)
+# Write the full decision data
+print("[*] Writing the full decisions data")
+with open("decisions-data-full.json", "w") as outfile:
+   json.dump(decisions_data, outfile)
+
+# Write the document data
+print("[*] Writing the documents data")
+with open("documents-data.json", "w") as outfile:
+   json.dump(all_documents, outfile)
+
+print("[+] Task Completed")
