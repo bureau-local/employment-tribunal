@@ -28,8 +28,9 @@ Preliminary data can be found in the following [google sheet](https://docs.googl
 
 ### Other possible improvements
 - [ ] Create the pdf/txt folders if they're missing before adding files in them
-- [ ] Ability to run the json to csv conversion for either decisions or document
+- [x] Ability to run the json to csv conversion for either decisions or document
 - [ ] In the pdf to txt conversion, flag pdfs that can't be converted
 - [ ] Re-write decisions-data.json rather than create a 2nd file
 - [ ] Add a doc count columns to the decision data (?)
 - [ ] Verify that all wording is consistent
+- [ ] Move the requests_get_with_retries() function to a utils file
