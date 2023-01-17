@@ -4,7 +4,7 @@ Making sense of employment tribunal decisions
 ### Tasks
 - [ ] Write script to analyse of the decisions data (most common defendant? etc.)
 - [ ] Write script to search within the txt files
-- [ ] Write a script to update the decisions data with the latest decisions
+- [x] Write a script to update the decisions data with the latest decisions
 - [ ] Automate the decisions data collection process
 - [ ] An automation to track/get new reports when they're published (and convert them to txt)
 
@@ -40,4 +40,5 @@ Preliminary data can be found in the following [google sheet](https://docs.googl
 - [x] Move the requests_get_with_retries() function to a utils file
 - [ ] Add a function to automate retries when making requests to gov.uk
 - [ ] Refactor, the similar code from `get-all-decisions.py` and `update-decisions.py` in the `utils.py`
-- [ ] For example here is a [decision](https://www.gov.uk/employment-tribunal-decisions/ms-a-n-harris-v-adecco-uk-ltd-and-amazon-uk-services-ltd-4100059-slash-2021), that we collected data for and which was later updated to include the 
+- [ ] For example here is a [decision](https://www.gov.uk/employment-tribunal-decisions/ms-a-n-harris-v-adecco-uk-ltd-and-amazon-uk-services-ltd-4100059-slash-2021), that we collected data for and which was later updated to include the judgment with resasons as part of the reports. The Decision date was also changed from what we had on record
+- [ ] Could an id ever change? We probably wan to test that by checking for duplicated urls in `decisions-data.json`

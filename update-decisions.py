@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 from bs4 import BeautifulSoup
@@ -41,10 +42,51 @@ while page <= page_count:
         # Break if we've already collected data for all ids on the page
         if all(collection_check):
             break
+        # If not start collecting data on the new decisions
+        for decision in decisions:
+            # Getting the individual data points
+            decision_name = decision.find("a").text
+            decision_id = decision_name.split(": ")[-1]
+            plaintiff_and_defendant = decision_name.split(": ")[0]
+            plaintiff = plaintiff_and_defendant.split(" v ")[0]
+            defendant = plaintiff_and_defendant.split(" v ")[-1]
+            link = base_url + decision.find("a")["href"]
+            decision_date = decision.find("time")["datetime"]
+            # If we've collected data, just update the decision date
+            if decision_id in collected_decision_ids:
+                updated_decision = next(d for d in decisions_data if d["Decision id"] == decision_id)
+                updated_decision["Decision date"] = decision_date
+                break
+            # Structuring the data in a dict
+            new_decision_data = {
+				"Decision id": decision_id,
+				"Decision name": decision_name,
+				"Plaintiff": plaintiff,
+				"Defendant": defendant,
+				"Link": link,
+				"Decision date": decision_date
+			}
+            # Add the new data to the data previously collected
+            decisions_data.append(new_decision_data)
+    # Print a process update
+    if page == 1 or page % 10 == 0:
+        update_string = "[*] Collected new decisions data from page {}"
+        print(update_string.format(page, page_count))
     # Increment the page count
     page += 1
     # Sleep for 1 sec between each call to gov.uk
     time.sleep(1)
     # Break after page 3 when testing
-    if page > 3:
-        break
+    # if page > 3:
+        # break
+
+# Write the latest decision data, first to a temp file
+print("[*] Writing the data to the outputfile")
+with open("decisions-data-temp.json", "w") as outfile:
+   json.dump(decisions_data, outfile)
+# Delete the original file and rename the temp file
+os.remove("decisions-data.json")
+os.rename("decisions-data-temp.json", "decisions-data.json")
+
+print("[*] Job completed :))")
+

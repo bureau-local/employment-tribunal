@@ -2,12 +2,12 @@ import json
 import csv
 
 convert_decisions_data = True
-convert_documents_data = True
+convert_documents_data = False
 
 # CONVERT THE DECISIONS DATA JSON TO CSV
 if convert_decisions_data == True:
     # Open the decisions data json
-    with open("decisions-data-full.json") as infile:
+    with open("decisions-data.json") as infile:
         decisions_data = json.load(infile)
     # Write the decisions data to a csv
     outhead = [key for key in decisions_data[0]]

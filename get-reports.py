@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 from bs4 import BeautifulSoup
@@ -71,14 +72,17 @@ for i, decision in enumerate(decisions_data):
 		print(update_msg.format(i+1, decisions_total))
 	# Sleep for a second between each call
 	time.sleep(1)
-	# Test with only the first ten decisions
-	# if i > 9:
-		# break
+	# Test with only the first twenty decisions
+	if i > 19:
+		break
 
-# Write the full decision data
+# Write the full decision data, first to a temp file
 print("[*] Writing the full decisions data")
-with open("decisions-data-full.json", "w") as outfile:
+with open("decisions-data-temp.json", "w") as outfile:
    json.dump(decisions_data, outfile)
+# Delete the original file and rename the temp file
+os.remove("decisions-data.json")
+os.rename("decisions-data-temp.json", "decisions-data.json")
 
 # Write the document data
 print("[*] Writing the documents data")
