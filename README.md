@@ -4,7 +4,9 @@ Making sense of employment tribunal decisions
 ### Tasks
 - [ ] Write script to analyse of the decisions data (most common defendant? etc.)
 - [ ] Write script to search within the txt files
-- [ ] An automation that runs/updates all step of the process automatically
+- [ ] Write a script to update the decisions data with the latest decisions
+- [ ] Automate the decisions data collection process
+- [ ] An automation to track/get new reports when they're published (and convert them to txt)
 
 ## Methodology
 
@@ -13,7 +15,9 @@ This data was collected using the  from the [employment tribunal decisions porta
 
 There are two steps to the data collection process, (1) collect the decisions from the portal listed above, (2) then go through each link from the portal and collect the additional data on each decisions and download the relevant documents.
 
-The code for the first step can be found in `get-all-decisions.py` and the code for the second step in `get-reports.py`.
+The code for the first step can be found in `get-all-decisions.py` to scrape all decisions, or with `update-decisions.py` to only get new decisions. The data collection in `update-decisions.py` automatically breaks when it reaches a page where we've already collected data for every decision id listed on the page.
+
+The code for the second step can be found in `get-reports.py`.
 
 ### File conversions
 `pdf-to-txt.py` is used to convert the collected pdfs to txts so we can analyse their content
@@ -26,11 +30,14 @@ Preliminary data can be found in the following [google sheet](https://docs.googl
 
 ---
 
-### Other possible improvements
+### Other thoughts/possible improvements
 - [ ] Create the pdf/txt folders if they're missing before adding files in them
 - [x] Ability to run the json to csv conversion for either decisions or document
 - [ ] In the pdf to txt conversion, flag pdfs that can't be converted
-- [ ] Re-write decisions-data.json rather than create a 2nd file
+- [ ] Re-write `decisions-data.json` rather than create a 2nd file
 - [ ] Add a doc count columns to the decision data (?)
 - [ ] Verify that all wording is consistent
-- [ ] Move the requests_get_with_retries() function to a utils file
+- [x] Move the requests_get_with_retries() function to a utils file
+- [ ] Add a function to automate retries when making requests to gov.uk
+- [ ] Refactor, the similar code from `get-all-decisions.py` and `update-decisions.py` in the `utils.py`
+- [ ] For example here is a [decision](https://www.gov.uk/employment-tribunal-decisions/ms-a-n-harris-v-adecco-uk-ltd-and-amazon-uk-services-ltd-4100059-slash-2021), that we collected data for and which was later updated to include the 

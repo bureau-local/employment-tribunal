@@ -1,26 +1,26 @@
-from bs4 import BeautifulSoup
-
 import json
-import requests
 import time
 
-# Variables to build the url
+from bs4 import BeautifulSoup
+
+from utils import requests_get_with_retries
+
+# Variables to build the employement tribunal decisions url
 base_url = "https://www.gov.uk"
 search_url = "/employment-tribunal-decisions?page="
 page = 1
 # Large inacurate page count until we get the actual page count
 page_count = 1000000000000
 # Variable to parse the html
-pagination_class = "gem-c-pagination__link-label"
+pagination_class = "govuk-pagination__link-label"
 
 # A list to group all decisions data we collect
 all_decisions = list()
 # Start the data collection process
 print("[*] Starting data collection process")
 while page <= page_count:
-	print(page)
 	paginated_url = base_url + search_url + str(page)
-	r = requests.get(paginated_url)
+	r = requests_get_with_retries(paginated_url)
 	time.sleep(1)
 	if r.status_code == 200:
 		html = r.text
@@ -51,13 +51,13 @@ while page <= page_count:
 				"Decision date": decision_date
 			}
 			all_decisions.append(decision_data)
-	# print a process update
+	# Print a process update
 	if page % 100 == 0:
 		update_string = "[*] Collected decisions data from {}/{} pages"
 		print(update_string.format(page, page_count))
-	# increment the page count
+	# Increment the page count
 	page += 1
-	# break after first page when testing
+	# Break after first page when testing
 	# if page > 1:
 		# break
 
