@@ -6,6 +6,10 @@ from bs4 import BeautifulSoup
 
 from utils import requests_get_with_retries
 
+# Create a pdf folder if there isn't one
+if not os.path.isdir("pdf"):
+    os.makedirs("pdf")
+
 # Open the decisions data
 with open("decisions-data.json") as infile:
 	decisions_data = json.load(infile)

@@ -1,6 +1,10 @@
 import os
 from pdfminer.high_level import extract_text
 
+# Create a txt folder if there isn't one
+if not os.path.isdir("txt"):
+    os.makedirs("txt")
+
 # Get all pdfs in the pdf folder
 pdf_files = [file for file in os.listdir("pdf") if file.endswith(".pdf")]
 # Loop through each pdf file
