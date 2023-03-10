@@ -7,7 +7,7 @@ with open("decisions-data.csv") as infile:
     decisions_data = [row for row in reader]
 
 # We will collect data on individual years since 2015
-years = ["2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023"]
+years = ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023"]
 # Dict to collect the defendant data
 defendant_data = dict()
 # Dict to collect the jurisdiction code data
@@ -22,10 +22,10 @@ for decision in decisions_data:
     # Get the year of complaint from the decision id
     year_of_complaint = decision_id.split("/")[-1][:4]
 
-    # !!! TO BE UPDATED !!!
     # For now we just skip if we get an unexpected year
     if year_of_complaint not in years:
-        continue
+        # !!! TO BE UPDATED !!!
+        pass
 
     # DEFENDANT ANALYSIS
     # Add defendant to the defendant data dict
@@ -35,8 +35,16 @@ for decision in decisions_data:
         for y in years:
             defendant_data[defendant][y] = 0
         defendant_data[defendant]["Total"] = 0
+        # Check if the defendant belongs to one of those key groups
+        key_groups = ["NHS", "Council", "Police"]
+        for group in key_groups:
+            if group.lower() in defendant.lower():
+                defendant_data[defendant][group] = True
+            else:
+                defendant_data[defendant][group] = False
     # Increment the totals
-    defendant_data[defendant][year_of_complaint] += 1
+    if year_of_complaint in years:
+        defendant_data[defendant][year_of_complaint] += 1
     defendant_data[defendant]["Total"] += 1
 
     # JURISDICTION CODE ANALYSIS
@@ -48,13 +56,14 @@ for decision in decisions_data:
                 jurisdiction_code_data[code][y] = 0
             jurisdiction_code_data[code]["Total"] = 0
         # Increment the totals
-        jurisdiction_code_data[code][year_of_complaint] += 1
+        if year_of_complaint in years:
+            jurisdiction_code_data[code][year_of_complaint] += 1
         jurisdiction_code_data[code]["Total"] += 1
         
 
 # Remove the key in the defendant dict and write the output data
 defendant_data = [val for key, val in defendant_data.items()]
-outhead = ["Defendant"] + years + ["Total"]
+outhead = ["Defendant"] + years + ["Total"] + key_groups
 with open("defendant-analysis.csv", "w") as outfile:
     writer = csv.DictWriter(outfile, fieldnames=outhead)
     writer.writeheader()
