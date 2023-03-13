@@ -6,6 +6,12 @@ with open("decisions-data.csv") as infile:
     header = reader.fieldnames
     decisions_data = [row for row in reader]
 
+# Open the defendant name corrections
+with open("defendant-consolidation.csv") as infile:
+    reader = csv.DictReader(infile)
+    header = reader.fieldnames
+    consolidate = {x["Listed name"]: x["Consolidated name"] for x in reader}
+
 # We will collect data on individual years since 2015
 years = ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023"]
 # Dict to collect the defendant data
@@ -22,6 +28,12 @@ for decision in decisions_data:
     defendant = decision["Defendant"]
     jurisdiction_codes = decision["Jurisdiction code"].split(", ")
     decision_date = decision["Decision date"]
+
+    # Correct/consolidate the defendant name if needed
+    if defendant.lower().endswith(" and others"):
+        defendant = defendant[:-11]
+    if defendant in consolidate:
+        defendant = consolidate[defendant]
     
     # Get the year of complaint from the decision id
     year_of_complaint = decision_id.split("/")[-1][:4]
