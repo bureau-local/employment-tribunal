@@ -6,11 +6,18 @@ with open("decisions-data.csv") as infile:
     header = reader.fieldnames
     decisions_data = [row for row in reader]
 
-# Open the defendant name corrections
+# Open the common defendant name to be split from multiple defendant name
+with open("defendant-split.csv") as infile:
+    reader = csv.DictReader(infile)
+    header = reader.fieldnames
+    defendant_split = {row["Defendant"] for row in reader}
+
+# Open the defendant name consolidations
 with open("defendant-consolidation.csv") as infile:
     reader = csv.DictReader(infile)
     header = reader.fieldnames
     consolidate = {x["Listed name"]: x["Consolidated name"] for x in reader}
+
 
 # We will collect data on individual years since 2015
 years = ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023"]
@@ -25,15 +32,25 @@ over_time_data = dict()
 for decision in decisions_data:
     # Assign the relevant data from the spreadsheet to vars
     decision_id = decision["Decision id"]
-    defendant = decision["Defendant"]
+    defendant = decision["Defendant"].strip()
     jurisdiction_codes = decision["Jurisdiction code"].split(", ")
     decision_date = decision["Decision date"]
 
-    # Correct/consolidate the defendant name if needed
+    # Correct the defendant name if needed
     if defendant.lower().endswith(" and others"):
         defendant = defendant[:-11]
-    if defendant in consolidate:
-        defendant = consolidate[defendant]
+    # Split multiple defendants - the defendant var will be turned to a lis
+    all_defendants = list()
+    for entity_name in defendant_split:
+        if entity_name in defendant:
+            defendant = defendant.replace(entity_name, "")
+            if defendant.startswith(" and "):
+                defendant = defendant[5:]
+            elif defendant.endswith(" and "):
+                defendant = defendant[:-5]
+            all_defendants.append(entity_name)
+    if defendant != "":
+        all_defendants.append(defendant)
     
     # Get the year of complaint from the decision id
     year_of_complaint = decision_id.split("/")[-1][:4]
@@ -44,23 +61,28 @@ for decision in decisions_data:
 
     # DEFENDANT ANALYSIS
     # Add defendant to the defendant data dict
-    if defendant not in defendant_data:
-        defendant_data[defendant] = dict()
-        defendant_data[defendant]["Defendant"] = defendant
-        for y in years:
-            defendant_data[defendant][y] = 0
-        defendant_data[defendant]["Total"] = 0
-        # Check if the defendant belongs to one of those key groups
-        key_groups = ["NHS", "Council", "Police"]
-        for group in key_groups:
-            if group.lower() in defendant.lower():
-                defendant_data[defendant][group] = True
-            else:
-                defendant_data[defendant][group] = False
-    # Increment the totals
-    if year_of_complaint in years:
-        defendant_data[defendant][year_of_complaint] += 1
-    defendant_data[defendant]["Total"] += 1
+    for defendant in all_defendants:
+        # Consolidate the defendant names:
+        if defendant in consolidate:
+            defendant  = consolidate[defendant]
+        # Add defendant to defendant data dict
+        if defendant not in defendant_data:
+            defendant_data[defendant] = dict()
+            defendant_data[defendant]["Defendant"] = defendant
+            for y in years:
+                defendant_data[defendant][y] = 0
+            defendant_data[defendant]["Total"] = 0
+            # Check if the defendant belongs to one of those key groups
+            key_groups = ["NHS", "Council", "Police"]
+            for group in key_groups:
+                if group.lower() in defendant.lower():
+                    defendant_data[defendant][group] = True
+                else:
+                    defendant_data[defendant][group] = False
+        # Increment the totals
+        if year_of_complaint in years:
+            defendant_data[defendant][year_of_complaint] += 1
+            defendant_data[defendant]["Total"] += 1
 
     # JURISDICTION CODE ANALYSIS
     for code in jurisdiction_codes:
@@ -109,7 +131,7 @@ with open("defendant-analysis.csv", "w") as outfile:
     writer.writeheader()
     writer.writerows(defendant_data)
 
-# Remove the key in the jurisdiction code dict and write the output data
+# # Remove the key in the jurisdiction code dict and write the output data
 jurisdiction_code_data = [val for key, val in jurisdiction_code_data.items()]
 outhead = ["Jurisdiction code"] + years + ["Total"]
 with open("jurisdiction-code-analysis.csv", "w") as outfile:
@@ -117,7 +139,7 @@ with open("jurisdiction-code-analysis.csv", "w") as outfile:
     writer.writeheader()
     writer.writerows(jurisdiction_code_data)
 
-# Remove the keys in the over time analysis and write the output data
+# # Remove the keys in the over time analysis and write the output data
 over_time_data = [val for key, val in over_time_data.items()]
 outhead = ["Quarter"] + years + ["Total"]
 with open("over-time-analysis.csv", "w") as outfile:
