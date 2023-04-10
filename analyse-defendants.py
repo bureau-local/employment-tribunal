@@ -2,6 +2,8 @@ import csv
 
 from utils import get_fingerprint_plus
 
+
+
 # Open the decicions data
 with open("data-out/decisions-data.csv") as infile:
     reader = csv.DictReader(infile)
@@ -21,7 +23,6 @@ with open("data-in/defendant-consolidation.csv") as infile:
 with open("data-in/care-organisations.csv") as infile:
     reader = csv.DictReader(infile)
     care_organisations = {get_fingerprint_plus(row["Organisation name"]) for row in reader}
-
 
 # We will collect data on individual years since 2015
 years = ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023"]
@@ -70,18 +71,34 @@ for decision in decisions_data:
             for y in years:
                 defendant_data[defendant][y] = 0
             defendant_data[defendant]["Total"] = 0
+            
+            # Check if the defendant is a local authority
+            defendant_data[defendant]["Local authority"] = False
+            council_flags = ("council", "london borough", "royal borough")
+            # Exceptions are false positives
+            exceptions = ("arts council", "british council", "church council", "midwifery council", "national council", "reporting council", "research council", "school council", "services council", "toursim council", "town council")
+            # Check if any flag and not any exceptions are in the name
+            flag_test = [True for flag in council_flags if flag in defendant.lower()]
+            exceptions_test = [True for val in exceptions if val in defendant.lower()]
+            if any(flag_test) and not any(exceptions_test): 
+                defendant_data[defendant]["Local authority"] = True
+            else:
+                defendant_data[defendant]["Local authority"] = False
+            
             # Check if the defendant belongs to one of those key groups
-            key_groups = ["NHS", "Council", "Police"]
+            key_groups = ["NHS", "Police"]
             for group in key_groups:
                 if group.lower() in defendant.lower():
                     defendant_data[defendant][group] = True
                 else:
                     defendant_data[defendant][group] = False
+            
             # Check if the defendant is a care organisations
             if get_fingerprint_plus(defendant) in care_organisations:
                 defendant_data[defendant]["Care organisation"] = True
             else:
                 defendant_data[defendant]["Care organisation"] = False
+        
         # Increment the totals
         if year_of_complaint in years:
             defendant_data[defendant][year_of_complaint] += 1
@@ -89,7 +106,7 @@ for decision in decisions_data:
 
 # Remove the key in the defendant dict and write the output data
 defendant_data = [val for key, val in defendant_data.items()]
-outhead = ["Defendant"] + years + ["Total"] + key_groups + ["Care organisations"]
+outhead = ["Defendant"] + years + ["Total", "Local authority"] + key_groups + ["Care organisation"]
 with open("data-out/defendant-analysis.csv", "w") as outfile:
     writer = csv.DictWriter(outfile, fieldnames=outhead)
     writer.writeheader()
