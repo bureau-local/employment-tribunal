@@ -48,10 +48,10 @@ Preliminary data can be found in the following [google sheet](https://docs.googl
 ### Other thoughts/possible improvements
 - [x] Create the pdf/txt folders if they're missing before adding files in them
 - [x] Ability to run the json to csv conversion for either decisions or document
-- [ ] In the pdf to txt conversion, flag pdfs that can't be converted
+- [ ] It would be neat to check if a pdf is a scanned image or containes searchable text we can extract ([see this](https://stackoverflow.com/questions/55704218/how-to-check-if-pdf-is-scanned-image-or-contains-text))
 - [x] Re-write `decisions-data.json` rather than create a 2nd file
 - [ ] Do we really need the temp file in `update-decisions.py`
-- [ ] Add a doc count columns to the decision data (?)
+- [ ] Add a document count columns to the decision data
 - [x] Move the requests_get_with_retries() function to a utils file
 - [x] Add a function to automate retries when making requests to gov.uk
 - [ ] Refactor, the similar code from `get-all-decisions.py` and `update-decisions.py` in the `utils.py`
@@ -60,7 +60,7 @@ Preliminary data can be found in the following [google sheet](https://docs.googl
 - [x] In the defendant analysis, add flags for defendant type (i.e. council, nhs, police)
 - [ ] It would be great to add additional sector flags (i.e. for care, gig economy...)
 - [ ] Find a way to localise the decisions? Maybe from "heard at" tribunal info in the pdfs
-- [ ] Remove town, church and school councils from local authority flag (also British council)
+- [x] Remove town, church and school councils from local authority flag (also British council)
 - [ ] Search for Visa in the text files
 - [ ] Should we be matching with lowercase as well
 - [x] Extract list of care organisations from the CQC care directory
@@ -70,4 +70,4 @@ Preliminary data can be found in the following [google sheet](https://docs.googl
 - [x] Refactor the local authority flag to also match on "london borough" and "royal borough"
 - [x] Refactor the local authority flag to avoid false positives from the word "council"
 - [ ] Would I be better with a list of local authorities like we do for care organisations 
-- [ ] "Ltd" is showing up in the defendant analysis
+- [x] "Ltd" is showing up in the defendant analysis

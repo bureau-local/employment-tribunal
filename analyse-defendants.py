@@ -12,7 +12,7 @@ with open("data-out/decisions-data.csv") as infile:
 # List of defendants to split from when multiple defendants are listed
 with open("data-in/defendant-split.csv") as infile:
     reader = csv.DictReader(infile)
-    defendant_split = {row["Defendant"] for row in reader}
+    defendant_split = [row["Defendant"] for row in reader]
 
 # List to consolidate spelling varions of the same defendant name
 with open("data-in/defendant-consolidation.csv") as infile:
@@ -34,6 +34,8 @@ for decision in decisions_data:
     # Assign the relevant data from the spreadsheet to vars
     decision_id = decision["Decision id"]
     defendant = decision["Defendant"].strip()
+
+    defendant_debug = defendant
 
     # Correct the defendant name if needed
     if defendant.lower().endswith(" and others"):
@@ -65,6 +67,9 @@ for decision in decisions_data:
         if defendant in consolidate:
             defendant  = consolidate[defendant]
         # Add defendant to defendant data dict
+        if defendant.strip().lower() == "ltd":
+            print(all_defendants)
+            print(defendant_debug)
         if defendant not in defendant_data:
             defendant_data[defendant] = dict()
             defendant_data[defendant]["Defendant"] = defendant
@@ -105,9 +110,9 @@ for decision in decisions_data:
             defendant_data[defendant]["Total"] += 1
 
 # Remove the key in the defendant dict and write the output data
-defendant_data = [val for key, val in defendant_data.items()]
-outhead = ["Defendant"] + years + ["Total", "Local authority"] + key_groups + ["Care organisation"]
-with open("data-out/defendant-analysis.csv", "w") as outfile:
-    writer = csv.DictWriter(outfile, fieldnames=outhead)
-    writer.writeheader()
-    writer.writerows(defendant_data)
+# defendant_data = [val for key, val in defendant_data.items()]
+# outhead = ["Defendant"] + years + ["Total", "Local authority"] + key_groups + ["Care organisation"]
+# with open("data-out/defendant-analysis.csv", "w") as outfile:
+#     writer = csv.DictWriter(outfile, fieldnames=outhead)
+#     writer.writeheader()
+#     writer.writerows(defendant_data)
